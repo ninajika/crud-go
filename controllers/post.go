@@ -1,6 +1,6 @@
 package controllers
 
-type Post struct {
+type PostType struct {
 	ID        int          `json:"id"`
 	Title     string       `json:"title"`
 	Body      string       `json:"body"`

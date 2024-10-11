@@ -7,17 +7,18 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/ninajika/crud-go/models"
 )
 
-// func GetDump(id string) (*controllers.PostType, error) {
-// 	result, err := ReadJson[controllers.PostType](fmt.Sprintf("dummies/%s/post.json", id))
-// 	if err != nil {
-// 		fmt.Println(err)
-// 		return nil, err
-// 	}
-// 	return result, nil
-// }
-
+func GetDump(id string) (*models.PostType, error) {
+	result, err := ReadJson[models.PostType](fmt.Sprintf("dummies/%s/post.json", id))
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	return result, nil
+}
 func ReadJson[R any](path string) (*R, error) {
 	jsonFile, err := os.Open(path)
 	if err != nil {
@@ -45,7 +46,7 @@ func CreateJson[R any](id string, data *R) error {
 		return fmt.Errorf("post.json already exists for ID: %s", id)
 	}
 
-	return writeJson(filePath, data)
+	return WriteJson(filePath, data)
 }
 
 func UpdateJson[R any](id string, data *R) error {
@@ -56,10 +57,10 @@ func UpdateJson[R any](id string, data *R) error {
 		return fmt.Errorf("post.json does not exist for ID: %s", id)
 	}
 
-	return writeJson(filePath, data)
+	return WriteJson(filePath, data)
 }
 
-func writeJson[R any](filePath string, data *R) error {
+func WriteJson[R any](filePath string, data *R) error {
 	jsonValue, err := json.Marshal(data)
 	if err != nil {
 		fmt.Println("Error marshaling JSON:", err)

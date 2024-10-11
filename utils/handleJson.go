@@ -9,7 +9,7 @@ import (
 	"github.com/ninajika/crud-go/controllers"
 )
 
-func GetJson(id string) (*controllers.PostType, error) {
+func GetDump(id string) (*controllers.PostType, error) {
 	result, err := ReadJson[controllers.PostType](fmt.Sprintf("dummies/%s/post.json", id))
 	if err != nil {
 		fmt.Println(err)

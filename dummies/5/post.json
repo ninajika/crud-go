@@ -1,0 +1,17 @@
+
+    {
+      "id": 5,
+      "title": "She wrote a book on cooking with air",
+      "body": "She wrote a book on cooking with air, convinced it would be the next big trend. But her friends' confusion over the concept left her doubting her culinary genius.",
+      "tags": [
+        "cooking",
+        "absurd",
+        "trends"
+      ],
+      "reactions": {
+        "likes": 90,
+        "dislikes": 15
+      },
+      "views": 170,
+      "userId": 567
+    }

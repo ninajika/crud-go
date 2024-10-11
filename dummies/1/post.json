@@ -1,5 +1,4 @@
-{
-    "posts": [
+
       {
         "id": 1,
         "title": "His mother had always taught him",
@@ -15,21 +14,5 @@
         },
         "views": 305,
         "userId": 121
-      },
-      {
-        "id": 2,
-        "title": "The quick, brown fox jumps over a lazy dog",
-        "body": "The quick, brown fox jumps over a lazy dog. DJs flock by when MTV ax quiz prog. Junk MTV quiz graced by fox whelps. Bawds carry around excuse my french.",
-        "tags": [
-          "animals",
-          "nature"
-        ],
-        "reactions": {
-          "likes": 192,
-          "dislikes": 25
-        },
-        "views": 305,
-        "userId": 121
       }
-    ]
-  }
+

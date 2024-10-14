@@ -78,10 +78,13 @@ func WriteJson[R any](filePath string, data *R) error {
 
 func DeletePost(id string) error {
 	log.Printf("Deleting post with ID: %s", id)
-	err := os.Remove(fmt.Sprintf("dummies/%s/post.json", id))
+
+	dirPath := fmt.Sprintf("dummies/%s", id)
+	err := os.RemoveAll(dirPath)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
+
 	return nil
 }

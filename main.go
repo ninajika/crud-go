@@ -1,8 +1,10 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
+	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/ninajika/crud-go/api/server/middleware"
 	"github.com/ninajika/crud-go/api/server/routes"
@@ -11,52 +13,54 @@ import (
 func main() {
 	r := gin.Default()
 
+	authMiddleware, err := middleware.InitJWTMiddleware()
+	if err != nil {
+		log.Fatal("JWT Error:" + err.Error())
+	}
+
 	r.GET("/post/:id", routes.GetPostById)
 	r.POST("/post/:id/update", routes.UpdatePostById)
 	r.GET("/post/:id/remove", routes.RemovePostById)
 	r.POST("/post/:id/create", routes.CreatePostById)
 
-	r.POST("/login", func(c *gin.Context) {
-		var loginData struct {
-			Username string `json:"username"`
-			Password string `json:"password"`
-		}
+	handlerMiddleware(authMiddleware)
+	registerRoutes(r, authMiddleware)
 
-		if err := c.BindJSON(&loginData); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
-			return
-		}
+	r.Run("localhost:8080")
+}
 
-		// Hardcoded credentials
-		if loginData.Username == "admin" && loginData.Password == "password" {
-			// Generate single JWT token
-			tokenString, err := middleware.GenerateToken(loginData.Username)
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
-				return
-			}
+func registerRoutes(r *gin.Engine, authMiddleware *jwt.GinJWTMiddleware) {
+	// Unprotected routes
+	r.POST("/login", authMiddleware.LoginHandler)
+	r.NoRoute(authMiddleware.MiddlewareFunc(), handleNoRoute())
 
-			// Set the token in a cookie
-			c.SetCookie("jwt_token", tokenString, 24*3600, "/", "localhost", false, true)
-
-			// Respond with success message
-			c.JSON(http.StatusOK, gin.H{
-				"message": "Logged in successfully",
-				"token":   tokenString,
-			})
-		} else {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password"})
-		}
-	})
-
+	// Protected routes
 	protected := r.Group("/api")
-	protected.Use(middleware.AuthMiddleware())
+	protected.Use(authMiddleware.MiddlewareFunc())
 	protected.GET("/protected-route", func(c *gin.Context) {
-		userID, _ := c.Get("userID")
+		claims := jwt.ExtractClaims(c)
+		user, _ := c.Get("id")
 		c.JSON(http.StatusOK, gin.H{
-			"message": "Welcome to the protected route!",
-			"user":    userID,
+			"userID":   claims["id"],
+			"userName": user.(*middleware.User).UserName,
+			"message":  "Welcome to the protected route!",
 		})
 	})
-	r.Run("localhost:8080")
+
+	protected.GET("/refresh_token", authMiddleware.RefreshHandler)
+}
+
+func handlerMiddleware(authMiddleware *jwt.GinJWTMiddleware) {
+	if err := authMiddleware.MiddlewareInit(); err != nil {
+		log.Fatal("authMiddleware.MiddlewareInit() Error:" + err.Error())
+	}
+}
+
+func handleNoRoute() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.JSON(http.StatusNotFound, gin.H{
+			"code":    http.StatusNotFound,
+			"message": "Page not found",
+		})
+	}
 }

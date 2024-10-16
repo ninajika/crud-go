@@ -18,36 +18,34 @@ func main() {
 		log.Fatal("JWT Error:" + err.Error())
 	}
 
-	r.GET("/post/:id", routes.GetPostById)
-	r.POST("/post/:id/update", routes.UpdatePostById)
-	r.GET("/post/:id/remove", routes.RemovePostById)
-	r.POST("/post/:id/create", routes.CreatePostById)
-
-	handlerMiddleware(authMiddleware)
 	registerRoutes(r, authMiddleware)
+	handlerMiddleware(authMiddleware)
 
 	r.Run("localhost:8080")
 }
 
 func registerRoutes(r *gin.Engine, authMiddleware *jwt.GinJWTMiddleware) {
-	// Unprotected routes
 	r.POST("/login", authMiddleware.LoginHandler)
 	r.NoRoute(authMiddleware.MiddlewareFunc(), handleNoRoute())
 
-	// Protected routes
 	protected := r.Group("/api")
 	protected.Use(authMiddleware.MiddlewareFunc())
-	protected.GET("/protected-route", func(c *gin.Context) {
+	protected.GET("/test", func(c *gin.Context) {
 		claims := jwt.ExtractClaims(c)
 		user, _ := c.Get("id")
 		c.JSON(http.StatusOK, gin.H{
 			"userID":   claims["id"],
 			"userName": user.(*middleware.User).UserName,
-			"message":  "Welcome to the protected route!",
+			"message":  "Welcome to the testing route!",
 		})
 	})
 
 	protected.GET("/refresh_token", authMiddleware.RefreshHandler)
+
+	protected.GET("/post/:id", routes.GetPostById)
+	protected.PUT("/post/:id", routes.UpdatePostById)
+	protected.DELETE("/post/:id", routes.RemovePostById)
+	protected.POST("/post", routes.CreatePostById)
 }
 
 func handlerMiddleware(authMiddleware *jwt.GinJWTMiddleware) {
@@ -58,9 +56,17 @@ func handlerMiddleware(authMiddleware *jwt.GinJWTMiddleware) {
 
 func handleNoRoute() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.JSON(http.StatusNotFound, gin.H{
-			"code":    http.StatusNotFound,
-			"message": "Page not found",
-		})
+		claims := jwt.ExtractClaims(c)
+		if claims["id"] != nil {
+			c.JSON(http.StatusNotFound, gin.H{
+				"code":    http.StatusNotFound,
+				"message": "Page not found",
+			})
+		} else {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"code":    http.StatusUnauthorized,
+				"message": "Unauthorized access",
+			})
+		}
 	}
 }

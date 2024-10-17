@@ -18,8 +18,8 @@ func main() {
 		log.Fatal("JWT Error:" + err.Error())
 	}
 
-	registerRoutes(r, authMiddleware)
 	handlerMiddleware(authMiddleware)
+	registerRoutes(r, authMiddleware)
 
 	r.Run("localhost:8080")
 }

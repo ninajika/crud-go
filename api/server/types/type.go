@@ -2,6 +2,11 @@ package types
 
 import "time"
 
+type Login struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 type Post struct {
 	ID        uint      `json:"id"`
 	Title     string    `json:"title"`
